@@ -135,6 +135,7 @@ void handle_lowbat_state() {
     if (!output_enabled) {
         fill_solid(leds, leds_count, CRGB(0, 0, 0));
         EVERY_N_MILLISECONDS(3000) {
+            FastLED.setBrightness(255);
             leds[5] = CRGB(255, 0, 0);
             FastLED.delay(50);
             leds[5] = CRGB(0, 0, 0);

@@ -493,7 +493,7 @@ void button_onEvent(slight_ButtonInput *pInstance, byte bEvent) {
             uint32_t duration = (*pInstance).getDurationActive();
             Serial.println(F("duration active: "));
             Serial.println(duration);
-            if (duration <= 2000) {
+            if (duration <= 1000) {
                 // pixelfaders_fadeTo_all(500, 10000, 0, 0);
             }
             else if (duration <= 3000) {
@@ -557,6 +557,10 @@ void button_onEvent(slight_ButtonInput *pInstance, byte bEvent) {
                 default:
                     brightness = 100;
             }
+            // Serial.print(F("new brightness: "));
+            // Serial.print(brightness);
+            // Serial.println();
+            FastLED.setBrightness(brightness);
             // sequencer_mode = sequencer_BREATH;
             // sequencer_interval = 50;
             // Serial.print(F("\t sequencer_mode: BREATH\n"));
