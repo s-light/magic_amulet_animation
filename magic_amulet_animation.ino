@@ -152,6 +152,9 @@ bool output_enabled = true;
 extern void fastled_setup(Print &out);
 extern void fastled_update();
 extern void leds_lowbat();
+extern void highlight_on();
+extern void highlight_off();
+extern uint8_t brightness;
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -483,18 +486,20 @@ void button_onEvent(slight_ButtonInput *pInstance, byte bEvent) {
         //     Serial.println();
         // } break;
         case slight_ButtonInput::event_Down : {
-            // Serial.println(F("FRL down"));
+            Serial.println(F("FRL down"));
+            // highlight_on();
         } break;
         case slight_ButtonInput::event_HoldingDown : {
             uint32_t duration = (*pInstance).getDurationActive();
             Serial.println(F("duration active: "));
             Serial.println(duration);
-            // if (duration <= 2000) {
-            //     pixelfaders_fadeTo_all(500, 10000, 0, 0);
-            // }
-            // else if (duration <= 3000) {
-            //     pixelfaders_fadeTo_all(500, 0, 10000, 0);
-            // }
+            if (duration <= 2000) {
+                // pixelfaders_fadeTo_all(500, 10000, 0, 0);
+            }
+            else if (duration <= 3000) {
+                highlight_on();
+                // pixelfaders_fadeTo_all(500, 0, 10000, 0);
+            }
             // else if (duration <= 4000) {
             //     pixelfaders_fadeTo_all(500, 0, 0, 10000);
             // }
@@ -517,6 +522,7 @@ void button_onEvent(slight_ButtonInput *pInstance, byte bEvent) {
         } break;
         case slight_ButtonInput::event_Up : {
             Serial.println(F("up"));
+            highlight_off();
             // pixelfaders_fadeTo_all(1000, 0, 0, 1);
         } break;
         case slight_ButtonInput::event_Click : {
@@ -537,7 +543,20 @@ void button_onEvent(slight_ButtonInput *pInstance, byte bEvent) {
             // Serial.println(F("click long"));
         } break;
         case slight_ButtonInput::event_ClickDouble : {
-            // Serial.println(F("click double"));
+            Serial.println(F("click double"));
+            switch (brightness) {
+                case 10:
+                    brightness = 100;
+                break;
+                case 100:
+                    brightness = 255;
+                break;
+                case 255:
+                    brightness = 10;
+                break;
+                default:
+                    brightness = 100;
+            }
             // sequencer_mode = sequencer_BREATH;
             // sequencer_interval = 50;
             // Serial.print(F("\t sequencer_mode: BREATH\n"));
