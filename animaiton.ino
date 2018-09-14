@@ -4,6 +4,7 @@ CRGB leds[leds_count];
 const uint8_t color_steps = 255 / leds_count;
 
 CRGBPalette16 currentPalette;
+CRGBPalette16 targetPalette;
 TBlendType    currentBlending = LINEARBLEND;
 
 const uint8_t brightness_min = 10;
@@ -37,26 +38,39 @@ uint16_t update_intervall = 100;
 
 
 
+// Fill a range of LEDs with a sequece of entryies from a palette in backwards order
+// based on https://github.com/FastLED/FastLED/blob/master/colorutils.h#L1554
+template <typename PALETTE>
+void fill_palette_backwards(
+    CRGB* L, uint16_t N, uint8_t startIndex, uint8_t incIndex,
+    const PALETTE& pal, uint8_t brightness, TBlendType blendType
+) {
+    uint8_t colorIndex = startIndex;
+    for( uint16_t i = 0; i < N; i++) {
+        L[i] = ColorFromPalette( pal, colorIndex, brightness, blendType);
+        colorIndex += incIndex;
+    }
+}
 
 
-
-void ChangePalettePeriodically()
-{
+void ChangePalettePeriodically() {
     uint8_t secondHand = (millis() / 1000) % 60;
     static uint8_t lastSecond = 99;
 
     if( lastSecond != secondHand) {
         lastSecond = secondHand;
-        if( secondHand == 0)  { currentPalette = CloudColors_p;           currentBlending = LINEARBLEND; }
-        if( secondHand == 30)  { currentPalette = ForestColors_p;           currentBlending = LINEARBLEND; }
-        // if( secondHand == 30)  { currentPalette = tree_gp;           currentBlending = LINEARBLEND; }
+        if( secondHand == 0)  {
+            targetPalette = CloudColors_p;
+        }
+        if( secondHand == 30)  {
+            targetPalette = ForestColors_p;
+        }
     }
 }
 
 
 
-void FillLEDsFromPaletteColors( uint8_t colorIndex)
-{
+void FillLEDsFromPaletteColors( uint8_t colorIndex) {
     uint8_t brightness = 255;
 
     for( int i = 0; i < leds_count; i++) {
@@ -73,11 +87,20 @@ void FillLEDsFromPaletteColors( uint8_t colorIndex)
 
 // ----------------------------------------------------------------------------
 
-void leds_off() {
-    FastLED.setBrightness(0);
+void leds_lowbat() {
+    // FastLED.setBrightness(1);
 }
 
-
+void handle_lowbat_state() {
+    if (!output_enabled) {
+        fill_solid(leds, leds_count, CRGB(0, 0, 0));
+        EVERY_N_MILLISECONDS(3000) {
+            leds[5] = CRGB(255, 0, 0);
+            FastLED.delay(50);
+            leds[5] = CRGB(0, 0, 0);
+        }
+    }
+}
 
 
 
@@ -90,10 +113,11 @@ void fastled_setup(Print &out) {
     delay(1000);
 
     // FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, leds_count).setCorrection( TypicalLEDStrip );
-    FastLED.addLeds<APA102, RGB>(leds, leds_count);
+    FastLED.addLeds<APA102, BGR>(leds, leds_count);
     FastLED.setBrightness(brightness);
 
     currentPalette = ForestColors_p;
+    targetPalette = CloudColors_p;
     currentBlending = LINEARBLEND;
 }
 
@@ -108,7 +132,16 @@ void fastled_update() {
         startIndex = startIndex + 1;
     }
 
+
+    EVERY_N_MILLISECONDS(10) {
+        uint8_t maxChanges = 24;
+        nblendPaletteTowardPalette( currentPalette, targetPalette, maxChanges);
+    }
+
     FillLEDsFromPaletteColors( startIndex);
+
+    // this overwrittes all other led settings..
+    handle_lowbat_state();
 
     FastLED.show();
     FastLED.delay(update_intervall);

@@ -151,6 +151,7 @@ bool output_enabled = true;
 // see animation.ino
 extern void fastled_setup(Print &out);
 extern void fastled_update();
+extern void leds_lowbat();
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -622,7 +623,7 @@ void lowbat_check() {
             // force off
             output_enabled = false;
             // digitalWrite(lowbat_warning_pin, LOW);
-            // leds_off();
+            leds_lowbat();
             Serial.println(F("--> output disabled"));
         }
     }
