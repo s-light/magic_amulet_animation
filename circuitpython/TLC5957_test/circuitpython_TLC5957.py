@@ -72,6 +72,10 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_TLC5957.git"
 
 import time
 
+# from enum import Enum, unique
+# https://docs.python.org/3/library/enum.html
+# currently not supported by CircuitPython
+
 
 def _shift_in(target_byte, val):
     # Shift in a new bit value to the provided target byte.  The byte will be
@@ -398,43 +402,43 @@ class TLC5957:
         Each value is a 16-bit number from 0-65535.
         """
         if 0 < key > (self.pixel_count-1):
-            raw_data_start = 14*(key / 12) + key % 12
-            self._buffer[raw_data_start]
-            return (self.r0, self.g0, self.b0)
+            return (
+                self._get_16bit_value_from_buffer(key + 0),
+                self._get_16bit_value_from_buffer(key + 2),
+                self._get_16bit_value_from_buffer(key + 4)
+            )
         else:
             raise IndexError
 
-    def __setitem__(self, key, val):
+    def __setitem__(self, key, value):
         """
         Set the R, G, B values for the provided channel.
 
         Specify a 3-tuple of R, G, B values that are each 16-bit numbers
         (0-65535).
         """
-        # Do this check here instead of later to
-        # prevent accidentally keeping auto_show
-        # turned off when a bad key is provided.
-        assert 0 <= key <= 3
+        if 0 < key > (self.pixel_count-1):
+            assert len(value) == 3
+            if isinstance(value[0], float):
+                # check if values are in range
+                assert 0 <= value[0] <= 1
+                assert 0 <= value[1] <= 1
+                assert 0 <= value[2] <= 1
+                # convert to 16bit value
+                value = (
+                    int(value[0] * 65535),
+                    int(value[1] * 65535),
+                    int(value[2] * 65535)
+                )
+            # check if values are in range
+            assert 0 <= value[0] <= 65535
+            assert 0 <= value[1] <= 65535
+            assert 0 <= value[2] <= 65535
+            # update buffer
+            self._set_16bit_value_in_buffer(key + 0, value[0])
+            self._set_16bit_value_in_buffer(key + 2, value[1])
+            self._set_16bit_value_in_buffer(key + 4, value[2])
+        else:
+            raise IndexError
 
-        assert len(val) == 3
-        assert 0 <= val[0] <= 65535
-        assert 0 <= val[1] <= 65535
-        assert 0 <= val[2] <= 65535
-        # Temporarily halt auto write to perform an atomic update of all
-        # the channel values.
-        old_auto_show = self.auto_show
-        self.auto_show = False
-        # Update appropriate channel values.
-        if key == 0:
-            self.r0, self.g0, self.b0 = val
-        elif key == 1:
-            self.r1, self.g1, self.b1 = val
-        elif key == 2:
-            self.r2, self.g2, self.b2 = val
-        elif key == 3:
-            self.r3, self.g3, self.b3 = val
-        # Restore auto_show state.
-        self.auto_show = old_auto_show
-        # Write out new values if in auto_show state.
-        if self.auto_show:
-            self._write()
+##########################################

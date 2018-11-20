@@ -20,7 +20,7 @@ import busio
 import pulseio
 import digitalio
 
-# import circuitpython_TLC5957
+import circuitpython_TLC5957
 
 ##########################################
 print(
@@ -34,10 +34,10 @@ print(
 
 ##########################################
 # Define SPI bus connected to chip.
-spi = busio.SPI(board.SCK, MOSI = board.MOSI)
+spi = busio.SPI(board.SCK, MOSI=board.MOSI)
 
 gsclk = pulseio.PWMOut(
-    board.D9, duty_cycle = 2 ** 15, frequency = 10 * 1000)
+    board.D9, duty_cycle=(2 ** 15), frequency=(10 * 1000))
 
 latch = digitalio.DigitalInOut(board.D7)
 latch.direction = digitalio.Direction.OUTPUT
@@ -55,25 +55,6 @@ tlc = circuitpython_TLC5957.TLC5975(
 
 
 ##########################################
-
-
-def map_01_to_16bit(color):
-    """Map range 0..1 to 16bit 0..65535."""
-    return (
-        int(color.red*65535),
-        int(color.green*65535),
-        int(color.blue*65535)
-    )
-
-
-def pixels_show():
-    """Call show on every pixel."""
-    for i in range(num_leds):
-        # pixels.write
-
-
-def write_LATCH(arg):
-    pass
 
 ##########################################
 
@@ -100,7 +81,7 @@ while True:
         #     div=i // 4,
         #     mod=i % 4
         # ))
-        pixels[i // 4][i % 4] = map_01_to_16bit(color)
+        pixels[i] = color
     # pixels_show()
     pixels[0].show()
 
