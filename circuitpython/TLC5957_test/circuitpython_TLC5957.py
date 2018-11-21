@@ -169,8 +169,11 @@ class TLC5957:
     #     enable writes to FC
     #     this must send before WRTFC
 
+    # https://docs.python.org/3/library/enum.html#intenum
+    # @unique
+    # class function_command(IntEnum):
     class function_command(object):
-        """ENUM for available function commands."""
+        """Enum for available function commands."""
 
         WRTGS = 1
         LATGS = 3

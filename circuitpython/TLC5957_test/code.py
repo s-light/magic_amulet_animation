@@ -22,6 +22,8 @@ import digitalio
 
 import circuitpython_TLC5957
 
+import adafruit_fancyled.adafruit_fancyled as fancyled
+
 ##########################################
 print(
     "\n" +
@@ -46,9 +48,7 @@ latch.direction = digitalio.Direction.OUTPUT
 
 # define pixel array
 num_leds = 16
-# pixels = circuitpython_TLC5957.TLC5975(
-#     spi, LAT = board.D7, GCLK = board.D9, num_leds)
-tlc = circuitpython_TLC5957.TLC5975(
+pixels = circuitpython_TLC5957.TLC5975(
     spi, latch, gsclk, num_leds)
 
 # tlc.start_grayscale()
@@ -60,12 +60,12 @@ tlc = circuitpython_TLC5957.TLC5975(
 
 # Declare a 6-element RGB rainbow palette
 palette = [
-    fancy.CRGB(1.0, 0.0, 0.0),  # Red
-    fancy.CRGB(0.5, 0.5, 0.0),  # Yellow
-    fancy.CRGB(0.0, 1.0, 0.0),  # Green
-    fancy.CRGB(0.0, 0.5, 0.5),  # Cyan
-    fancy.CRGB(0.0, 0.0, 1.0),  # Blue
-    fancy.CRGB(0.5, 0.0, 0.5),  # Magenta
+    fancyled.CRGB(1.0, 0.0, 0.0),  # Red
+    fancyled.CRGB(0.5, 0.5, 0.0),  # Yellow
+    fancyled.CRGB(0.0, 1.0, 0.0),  # Green
+    fancyled.CRGB(0.0, 0.5, 0.5),  # Cyan
+    fancyled.CRGB(0.0, 0.0, 1.0),  # Blue
+    fancyled.CRGB(0.5, 0.0, 0.5),  # Magenta
 ]
 
 offset = 0  # Positional offset into color palette to get it to 'spin'
@@ -74,16 +74,15 @@ while True:
     for i in range(num_leds):
         # Load each pixel's color from the palette using an offset, run it
         # through the gamma function, pack RGB value and assign to pixel.
-        color = fancy.palette_lookup(palette, offset + i / num_leds)
-        # color = fancy.gamma_adjust(color, brightness=0.25)
+        color = fancyled.palette_lookup(palette, offset + i / num_leds)
+        # color = fancyled.gamma_adjust(color, brightness=0.25)
         # print("{index:>2} : {div:>2} | {mod:>2}".format(
         #     index=i,
         #     div=i // 4,
         #     mod=i % 4
         # ))
         pixels[i] = color
-    # pixels_show()
-    pixels[0].show()
+    pixels.show()
 
     offset += 0.001  # Bigger number = faster spin
 
