@@ -1,7 +1,6 @@
 
 # The MIT License (MIT).
 #
-# Copyright (c) 2017 Tony DiCola for Adafruit Industries
 # Copyright (c) 2018 Stefan Krüger s-light.eu
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +28,6 @@
 
 CircuitPython module for the
 TLC5957 16-bit 48 channel LED PWM driver.
-See examples/simpletest_multi.py for a demo of the usage.
 
 * Author(s): Stefan Kruger
 
