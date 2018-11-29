@@ -12,7 +12,10 @@ print("test for pwm frequency")
 # https://github.com/adafruit/circuitpython/blob/master/ports/atmel-samd/common-hal/pulseio/PWMOut.c#L119
 freqency = (6000 * 1000)  # 6MHz
 pwm = pulseio.PWMOut(
-    board.D9, duty_cycle=(2 ** 15), frequency=freqency)
+    board.D9,
+    duty_cycle=(2 ** 15),
+    frequency=freqency,
+    variable_frequency=True)
 print("pwm.frequency: {:}MHz".format(pwm.frequency / (1000*1000)))
 
 ##########################################
