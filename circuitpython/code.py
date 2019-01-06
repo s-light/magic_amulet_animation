@@ -57,9 +57,9 @@ pixels = [
 def map_01_to_16bit(color):
     """Map range 0..1 to 16bit 0..65535."""
     return (
-        int(color.red*65535),
-        int(color.green*65535),
-        int(color.blue*65535)
+        int(color.red * 65535),
+        int(color.green * 65535),
+        int(color.blue * 65535)
     )
 
 
