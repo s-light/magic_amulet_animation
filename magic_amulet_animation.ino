@@ -155,30 +155,39 @@ extern void leds_lowbat();
 extern void highlight_on();
 extern void highlight_off();
 extern uint8_t brightness;
+extern bool animation_run;
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // button
 
-const uint8_t button_pin = 5;
-// const uint8_t button_pin_2 = 8;
+const uint8_t mybutton_pin = 5;
+// const uint8_t mybutton_pin_2 = 8;
 
-extern boolean button_getInput(uint8_t id, uint8_t pin);
+extern boolean mybutton_get_input(uint8_t id, uint8_t pin);
 
-extern void button_onEvent(slight_ButtonInput *pInstance, byte bEvent);
+extern void mybutton_event(slight_ButtonInput *instance, byte bEvent);
 
 
-slight_ButtonInput button(
-    0,  // byte cbID_New
-    button_pin,  // byte cbPin_New,
-    button_getInput,  // tCbfuncGetInput cbfuncGetInput_New,
-    button_onEvent,  // tcbfOnEvent cbfCallbackOnEvent_New,
-      30,  // const uint16_t cwDuration_Debounce_New = 30,
-     500,  // const uint16_t cwDuration_HoldingDown_New = 1000,
-      50,  // const uint16_t cwDuration_ClickSingle_New =   50,
-     500,  // const uint16_t cwDuration_ClickLong_New =   3000,
-     500   // const uint16_t cwDuration_ClickDouble_New = 1000
+slight_ButtonInput mybutton1(
+    // uint8_t id_new
+    0,
+    // uint8_t pin_new,
+    mybutton_pin,
+    // tCallbackFunctionGetInput callbackGetInput_new,
+    mybutton_get_input,
+    // tCallbackFunction callbackOnEvent_new,
+    mybutton_event,
+    // const uint16_t duration_debounce_new = 20,
+    30,
+    // const uint16_t duration_holddown_new = 1000,
+    500,
+    // const uint16_t duration_click_long_new =   3000,
+    500,
+    // const uint16_t duration_click_double_new = 250
+    500
 );
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // lowbat
@@ -218,9 +227,9 @@ int freeRam () {
 // Menu System
 
 // Main Menu
-void handleMenu_Main(slight_DebugMenu *pInstance) {
-    Print &out = pInstance->get_stream_out_ref();
-    char *command = pInstance->get_command_current_pointer();
+void handleMenu_Main(slight_DebugMenu *instance) {
+    Print &out = instance->get_stream_out_ref();
+    char *command = instance->get_command_current_pointer();
     // out.print("command: '");
     // out.print(command);
     // out.println("'");
@@ -239,13 +248,9 @@ void handleMenu_Main(slight_DebugMenu *pInstance) {
             out.println(F("\t 'Y': toggle DebugOut livesign LED"));
             out.println(F("\t 'x': tests"));
             out.println();
-            // out.println(F("\t 'A': Show 'HelloWorld' "));
-            // out.println(F("\t 'a': toggle sequencer"));
-            // out.println(F("\t 'a': toggle SPIRAL"));
-            // out.println(F("\t 'b': toggle SPIRAL2"));
-            // out.println(F("\t 'B': toggle SPIRALSUN"));
+            out.println(F("\t 'a': toggle animation"));
+            out.println(F("\t 'b': set brightness 'b255'"));
             // out.println(F("\t 'c': toggle HPLINE"));
-            // out.println(F("\t 'I': set sequencer interval 'i65535'"));
             // out.println(F("\t 'v': set effect value_low 'v65535'"));
             // out.println(F("\t 'V': set effect value_high 'V65535'"));
             out.println();
@@ -295,56 +300,23 @@ void handleMenu_Main(slight_DebugMenu *pInstance) {
             out.println(F("__________"));
         } break;
         //---------------------------------------------------------------------
-        // case 'A': {
-        //     out.println(F("\t Hello World! :-)"));
-        // } break;
-        // case 'a': {
-        //     out.println(F("\t toggle sequencer:"));
-        //     if (sequencer_mode == sequencer_OFF) {
-        //         sequencer_mode = sequencer_CHANNELCHECK;
-        //         out.print(F("\t sequencer_mode: CHANNELCHECK\n"));
-        //     }
-        //     else {
-        //         sequencer_mode = sequencer_OFF;
-        //         out.print(F("\t sequencer_mode: OFF\n"));
-        //     }
-        // } break;
-        // case 'a': {
-        //     out.println(F("\t toggle SPIRAL:"));
-        //     if (sequencer_mode == sequencer_OFF) {
-        //         sequencer_mode = sequencer_SPIRAL;
-        //         sequencer_interval = 30;
-        //         out.print(F("\t sequencer_mode: SPIRAL\n"));
-        //     }
-        //     else {
-        //         sequencer_mode = sequencer_OFF;
-        //         out.print(F("\t sequencer_mode: OFF\n"));
-        //     }
-        // } break;
-        // case 'b': {
-        //     out.println(F("\t toggle BREATH:"));
-        //     if (sequencer_mode == sequencer_OFF) {
-        //         sequencer_mode = sequencer_BREATH;
-        //         out.print(F("\t sequencer_mode: BREATH\n"));
-        //         sequencer_interval = 30;
-        //     }
-        //     else {
-        //         sequencer_mode = sequencer_OFF;
-        //         out.print(F("\t sequencer_mode: OFF\n"));
-        //     }
-        // } break;
-        // case 'B': {
-        //     out.println(F("\t toggle SPIRALSUN:"));
-        //     if (sequencer_mode == sequencer_OFF) {
-        //         sequencer_mode = sequencer_SPIRALSUN;
-        //         out.print(F("\t sequencer_mode: SPIRALSUN\n"));
-        //         sequencer_interval = 100;
-        //     }
-        //     else {
-        //         sequencer_mode = sequencer_OFF;
-        //         out.print(F("\t sequencer_mode: OFF\n"));
-        //     }
-        // } break;
+        case 'a': {
+            out.print(F("\t toggle animation_run: "));
+            animation_run = ! animation_run;
+            out.print(animation_run);
+            out.println();
+        } break;
+        case 'b': {
+            out.print(F("\t set brightness "));
+            // convert part of string to int
+            // (up to first char that is not a number)
+            uint8_t command_offset = 1;
+            uint16_t value = atoi(&command[command_offset]);
+            out.print(value);
+            out.println();
+            brightness = value;
+            FastLED.setBrightness(brightness);
+        } break;
         // case 'c': {
         //     out.println(F("\t toggle HPLINE:"));
         //     if (sequencer_mode == sequencer_OFF) {
@@ -356,16 +328,6 @@ void handleMenu_Main(slight_DebugMenu *pInstance) {
         //         sequencer_mode = sequencer_OFF;
         //         out.print(F("\t sequencer_mode: OFF\n"));
         //     }
-        // } break;
-        // case 'I': {
-        //     out.print(F("\t set sequencer interval "));
-        //     // convert part of string to int
-        //     // (up to first char that is not a number)
-        //     uint8_t command_offset = 1;
-        //     uint16_t value = atoi(&command[command_offset]);
-        //     out.print(value);
-        //     out.println();
-        //     sequencer_interval = value;
         // } break;
         // case 'v': {
         //     out.print(F("\t set effect value_low"));
@@ -434,8 +396,8 @@ void handleMenu_Main(slight_DebugMenu *pInstance) {
                 out.print(command);
                 out.println(F("' not recognized. try again."));
             }
-            pInstance->get_command_input_pointer()[0] = '?';
-            pInstance->set_flag_EOC(true);
+            instance->get_command_input_pointer()[0] = '?';
+            instance->set_flag_EOC(true);
         }
     } // end switch
 
@@ -452,7 +414,7 @@ void handleMenu_Main(slight_DebugMenu *pInstance) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Sequencer
 
-// we try simpler... for now
+// do it simple - do it now ;-)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // FaderLin
@@ -460,37 +422,25 @@ void handleMenu_Main(slight_DebugMenu *pInstance) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // button callbacks
 
-boolean button_getInput(uint8_t id, uint8_t pin) {
-    // read input invert reading - button closes to GND.
-    // check HWB
-    // return ! (PINE & B00000100);
-    return ! digitalRead(pin);
+boolean mybutton_get_input(slight_ButtonInput *instance) {
+    // read input + invert: button closes to GND.
+    return !digitalRead((*instance).pin);
 }
 
-void button_onEvent(slight_ButtonInput *pInstance, byte bEvent) {
-    // Serial.print(F("FRL button:"));
-    // Serial.println((*pInstance).getID());
-    //
-    // Serial.print(F("Event: "));
-    // Serial.print(bEvent);
-    // // (*pInstance).printEvent(Serial, bEvent);
+void mybutton_event(slight_ButtonInput *instance) {
+    // Serial.print(F("instance:"));
+    // Serial.print((*instance).id);
+    // Serial.print(F(" - event: "));
+    // (*instance).printEventLast(Serial);
     // Serial.println();
 
-    // uint8_t button_id = (*pInstance).getID();
-
-    // show event additional infos:
-    switch (bEvent) {
-        // case slight_ButtonInput::event_StateChanged : {
-        //     Serial.println(F("\t state: "));
-        //     (*pInstance).printlnState(Serial);
-        //     Serial.println();
-        // } break;
-        case slight_ButtonInput::event_Down : {
-            Serial.println(F("FRL down"));
-            // highlight_on();
+    // react on event
+    switch ((*instance).getEventLast()) {
+        case slight_ButtonInput::event_down : {
+            Serial.println(F("button down"));
         } break;
-        case slight_ButtonInput::event_HoldingDown : {
-            uint32_t duration = (*pInstance).getDurationActive();
+        case slight_ButtonInput::event_holddown : {
+            uint32_t duration = (*instance).getDurationActive();
             Serial.println(F("duration active: "));
             Serial.println(duration);
             if (duration <= 1000) {
@@ -520,42 +470,36 @@ void button_onEvent(slight_ButtonInput *pInstance, byte bEvent) {
             // }
 
         } break;
-        case slight_ButtonInput::event_Up : {
+        case slight_ButtonInput::event_up : {
             Serial.println(F("up"));
             highlight_off();
-            // pixelfaders_fadeTo_all(1000, 0, 0, 1);
         } break;
-        case slight_ButtonInput::event_Click : {
-            // Serial.println(F("FRL click"));
-            // if (sequencer_mode == sequencer_OFF) {
-            //     sequencer_mode = sequencer_SPIRAL;
-            //     sequencer_interval = 50;
-            //     Serial.print(F("\t sequencer_mode: SPIRAL\n"));
-            // }
-            // else {
-            //     sequencer_off();
-            //     sequencer_mode = sequencer_OFF;
-            //     Serial.print(F("\t sequencer_mode: OFF\n"));
-            // }
-
+        case slight_ButtonInput::event_click : {
+            // Serial.println(F("click"));
         } break;
-        case slight_ButtonInput::event_ClickLong : {
-            // Serial.println(F("click long"));
+        case slight_ButtonInput::event_click_long : {
+            Serial.print(F("click long "));
+            Serial.println((*instance).getDurationActive());
         } break;
-        case slight_ButtonInput::event_ClickDouble : {
+        case slight_ButtonInput::event_click_double : {
             Serial.println(F("click double"));
             switch (brightness) {
-                case 10:
-                    brightness = 100;
+                case 5:
+                    brightness = 8;
                 break;
-                case 100:
+                case 8:
+                    brightness = 30;
+                case 30:
+                    brightness = 80;
+                break;
+                case 80:
                     brightness = 255;
                 break;
                 case 255:
-                    brightness = 10;
+                    brightness = 5;
                 break;
                 default:
-                    brightness = 100;
+                    brightness = 10;
             }
             // Serial.print(F("new brightness: "));
             // Serial.print(brightness);
@@ -565,40 +509,14 @@ void button_onEvent(slight_ButtonInput *pInstance, byte bEvent) {
             // sequencer_interval = 50;
             // Serial.print(F("\t sequencer_mode: BREATH\n"));
         } break;
-        // case slight_ButtonInput::event_ClickDouble : {
-        //     // Serial.println(F("click double"));
-        //     sequencer_mode = sequencer_HORIZONTAL;
-        //     sequencer_interval = 1000;
-        //     Serial.print(F("\t sequencer_mode: HORIZONTAL\n"));
-        // } break;
-        // case slight_ButtonInput::event_ClickTriple : {
-        //     sequencer_mode = sequencer_SPIRAL;
-        //     sequencer_interval = 100;
-        //     Serial.print(F("\t sequencer_mode: SPIRAL\n"));
-        //     // Serial.println(F("click triple"));
-        // } break;
-        // case slight_ButtonInput::event_ClickMulti : {
-        //     Serial.print(F("click count: "));
-        //     Serial.println((*pInstance).getClickCount());
-        //     switch ((*pInstance).getClickCount()) {
-        //         case 4 : {
-        //             sequencer_mode = sequencer_SPIRAL2;
-        //             sequencer_interval = 50;
-        //             Serial.print(F("\t sequencer_mode: SPIRAL 2boards\n"));
-        //         } break;
-        //         case 5 : {
-        //             sequencer_mode = sequencer_HPLINE;
-        //             sequencer_interval = 50;
-        //             Serial.print(F("\t sequencer_mode: High Power Line\n"));
-        //         } break;
-        //         case 6 : {
-        //             sequencer_mode = sequencer_SPIRALSUN;
-        //             sequencer_interval = 100;
-        //             Serial.print(F("\t sequencer_mode: SPIRALSUN\n"));
-        //         } break;
-        //     }
-        // } break;
-    }  // end switch
+        case slight_ButtonInput::event_click_triple : {
+            // Serial.println(F("click triple"));
+        } break;
+        case slight_ButtonInput::event_click_multi : {
+            Serial.print(F("click multi - count: "));
+            Serial.println((*instance).getClickCount());
+        } break;
+    } //end switch
 }
 
 
@@ -729,12 +647,12 @@ void setup() {
 
     out.println(F("setup button:")); {
         out.println(F("\t set button pin"));
-        pinMode(button_pin, INPUT_PULLUP);
+        pinMode(mybutton_pin, INPUT_PULLUP);
         // use second pin as GND for button:
-        // pinMode(button_pin_2, OUTPUT);
-        // digitalWrite(button_pin_2, LOW);
+        // pinMode(mybutton_pin_2, OUTPUT);
+        // digitalWrite(mybutton_pin_2, LOW);
         out.println(F("\t button begin"));
-        button.begin();
+        mybutton1.begin();
     }
     out.println(F("\t finished."));
 
@@ -767,7 +685,7 @@ void loop() {
         // pixelfaders_update();
         fastled_update();
 
-        button.update();
+        mybutton1.update();
 
         lowbat_check();
 

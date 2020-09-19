@@ -7,15 +7,17 @@ CRGBPalette16 currentPalette;
 CRGBPalette16 targetPalette;
 TBlendType    currentBlending = LINEARBLEND;
 
-const uint8_t brightness_min = 10;
+const uint8_t brightness_min = 3;
 const uint8_t brightness_max = 255;
-uint8_t brightness = 10;
+uint8_t brightness = brightness_min;
 
 uint16_t update_intervall = 10;
 
 uint16_t fade_intervall = 10;
 
 bool leds_highlight = false;
+
+bool animation_run = true;
 
 // DEFINE_GRADIENT_PALETTE( tree_gp ) {
 //       0,    20,100,  0,   //green
@@ -178,7 +180,7 @@ void fastled_setup(Print &out) {
 
 void fastled_update() {
 
-    if (!leds_highlight) {
+    if (!leds_highlight && animation_run) {
         ChangePalettePeriodically();
     }
 
